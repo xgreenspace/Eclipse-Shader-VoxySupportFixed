@@ -80,7 +80,8 @@ float luma(vec3 color) {
 
 vec3 worldToView(vec3 worldPos) {
     vec4 pos = vec4(worldPos, 0.0);
-    pos = vxModelView * pos;
+    // Use vanilla camera matrices for world/view transforms; Voxy only guarantees vxProj*.
+    pos = gbufferModelView * pos;
     return pos.xyz;
 }
 
@@ -176,7 +177,8 @@ void voxy_emitFragment(VoxyFragmentParameters parameters) {
 if (gl_FragCoord.x * texelSize.x < 1.0  && gl_FragCoord.y * texelSize.y < 1.0 )	{
     vec3 viewPos = DH_toScreenSpace(gl_FragCoord.xyz*vec3(texelSize/RENDER_SCALE,1.0));
 
-	vec3 feetPlayerPos = mat3(vxModelViewInv) * viewPos + vxModelViewInv[3].xyz;;
+	// Keep position reconstruction in the same space used by the main pipeline.
+	vec3 feetPlayerPos = mat3(gbufferModelViewInverse) * viewPos + gbufferModelViewInverse[3].xyz;
     
     gbuffer_data_0 = parameters.sampledColour * parameters.tinting;
 
@@ -210,18 +212,18 @@ if (gl_FragCoord.x * texelSize.x < 1.0  && gl_FragCoord.y * texelSize.y < 1.0 )	
 		#ifdef SMOOTH_SUN_ROTATION
 			WsunVec = WsunVecSmooth;
 		#else
-			WsunVec = normalize(mat3(vxModelViewInv) * sunPosition);
+			WsunVec = normalize(mat3(gbufferModelViewInverse) * sunPosition);
 		#endif
 		WsunVec2 = normalize(sunPosition);
 
 		WsunVec = mix(WmoonVec, WsunVec, float(sunElevation > 1e-5));
-		WsunVec2 = mix(normalize(mat3(vxModelView)*WmoonVec), WsunVec2, float(sunElevation > 1e-5));
+		WsunVec2 = mix(normalize(mat3(gbufferModelView) * WmoonVec), WsunVec2, float(sunElevation > 1e-5));
 	#else
 		float lightSourceCheck = float(sunElevation > 1e-5)*2.0 - 1.0;
 		#ifdef SMOOTH_SUN_ROTATION
 			WsunVec = lightSourceCheck * WsunVecSmooth;
 		#else
-			WsunVec = lightSourceCheck * normalize(mat3(vxModelViewInv) * sunPosition);
+			WsunVec = lightSourceCheck * normalize(mat3(gbufferModelViewInverse) * sunPosition);
 		#endif
 		WsunVec2 = lightSourceCheck * normalize(sunPosition);
 	#endif

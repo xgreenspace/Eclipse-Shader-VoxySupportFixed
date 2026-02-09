@@ -2,6 +2,7 @@
     "unusedString": "
         #include "/lib/settings.glsl"
         #include "/lib/res_params.glsl"
+        // Keep Voxy matrix usage anchored to vxProj* and vanilla gbuffer model-view matrices.
     ",
     "version": 1,
     "opaqueDrawBuffers": [1, 8],
@@ -108,9 +109,6 @@
         "cumulonimbusStrength",
         #endif
         "framemod4_DH",
-        "vxModelView",
-        "vxModelViewPrev",
-        "vxModelViewInv",
         "frameCounter",
         "framemod8",
         "dhVoxyFarPlane",
@@ -145,6 +143,7 @@
     ], 
     "samplers": [
         "vxDepthTexOpaque",
+        "vxDepthTexTrans",
         "noisetex",
         "colortex4",
         "colortex5",
